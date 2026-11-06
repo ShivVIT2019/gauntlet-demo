@@ -1,3 +1,4 @@
+from collections import defaultdict, deque
 import time
 
 
@@ -6,17 +7,18 @@ class RateLimiter:
         self.limit = limit
         self.window_seconds = window_seconds
         self.clock = clock
-        self.windows = {}
+        self.requests = defaultdict(deque)
 
     def allow(self, key):
         now = self.clock()
-        start, count = self.windows.get(key, (now, 0))
+        timestamps = self.requests[key]
 
-        if now - start >= self.window_seconds:
-            start, count = now, 0
+        # A request stops counting once it is a full window old.
+        while timestamps and now - timestamps[0] >= self.window_seconds:
+            timestamps.popleft()
 
-        if count > self.limit:
+        if len(timestamps) >= self.limit:
             return False
 
-        self.windows[key] = (start, count + 1)
+        timestamps.append(now)
         return True
