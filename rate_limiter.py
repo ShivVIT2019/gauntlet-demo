@@ -10,13 +10,13 @@ class RateLimiter:
 
     def allow(self, key):
         now = self.clock()
-        start, count = self.windows.get(key, (now, 0))
+        cutoff = now - self.window_seconds
+        timestamps = [t for t in self.windows.get(key, []) if t > cutoff]
 
-        if now - start >= self.window_seconds:
-            start, count = now, 0
-
-        if count > self.limit:
+        if len(timestamps) >= self.limit:
+            self.windows[key] = timestamps
             return False
 
-        self.windows[key] = (start, count + 1)
+        timestamps.append(now)
+        self.windows[key] = timestamps
         return True
