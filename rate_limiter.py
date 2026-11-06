@@ -15,7 +15,7 @@ class RateLimiter:
         if now - start >= self.window_seconds:
             start, count = now, 0
 
-        if count > self.limit:
+        if count >= self.limit:
             return False
 
         self.windows[key] = (start, count + 1)
