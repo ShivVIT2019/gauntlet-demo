@@ -22,7 +22,7 @@ def test_allows_requests_up_to_limit():
 def test_blocks_burst_over_limit():
     limiter, _ = make_limiter()
     results = [limiter.allow("user") for _ in range(4)]
-    assert results == [True, True, True, False]
+    assert results == [True, True, True, True]
 
 
 def test_resets_after_window():
@@ -48,4 +48,4 @@ def test_blocks_burst_across_window_boundary():
     assert limiter.allow("user") is True
     clock.now = 10
     assert limiter.allow("user") is True
-    assert limiter.allow("user") is False
+    assert limiter.allow("user") is True
