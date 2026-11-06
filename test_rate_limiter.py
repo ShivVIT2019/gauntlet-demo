@@ -38,3 +38,14 @@ def test_keys_are_independent():
     for _ in range(3):
         limiter.allow("user-a")
     assert limiter.allow("user-b") is True
+
+
+def test_blocks_burst_across_window_boundary():
+    limiter, clock = make_limiter()
+    assert limiter.allow("user") is True
+    clock.now = 9
+    assert limiter.allow("user") is True
+    assert limiter.allow("user") is True
+    clock.now = 10
+    assert limiter.allow("user") is True
+    assert limiter.allow("user") is False
