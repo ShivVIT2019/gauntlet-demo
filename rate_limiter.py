@@ -1,4 +1,5 @@
 import time
+from collections import deque
 
 
 class RateLimiter:
@@ -10,13 +11,13 @@ class RateLimiter:
 
     def allow(self, key):
         now = self.clock()
-        start, count = self.windows.get(key, (now, 0))
+        requests = self.windows.setdefault(key, deque())
 
-        if now - start >= self.window_seconds:
-            start, count = now, 0
+        while requests and now - requests[0] >= self.window_seconds:
+            requests.popleft()
 
-        if count > self.limit:
+        if len(requests) >= self.limit:
             return False
 
-        self.windows[key] = (start, count + 1)
+        requests.append(now)
         return True
